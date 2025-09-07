@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis of Concrete Compressive Strength</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            color: #cbd5e1; /* slate-300 */
+            scroll-behavior: smooth;
+            /* Dark Blue background */
+            background-color: #0f172a; /* slate-900 */
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%231e293b' fill-opacity='0.6'%3E%3Ccircle cx='10' cy='10' r='1.5'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        .slide {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5rem 2rem;
+            border-bottom: 1px solid #1e293b; /* slate-800 */
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .slide.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .content-card, .chart-container {
+            position: relative;
+            background-color: #1e293b; /* slate-800 */
+            padding: 2rem;
+            border-radius: 1rem;
+            margin-top: 2rem;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            border: 1px solid #334155; /* slate-700 border */
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .content-card:hover, .chart-container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .gradient-text {
+            background: linear-gradient(to right, #22d3ee, #a78bfa); /* Cyan to Lavender */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Slide 1: Title -->
+    <section class="slide visible bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+        <div class="slide-content text-center">
+            <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight">Analysis of Concrete Compressive Strength</h1>
+            <p class="mt-4 text-xl md:text-2xl text-slate-300">Data-Driven Insights for Material Performance and Optimization</p>
+            <p class="mt-8 text-lg text-slate-400">Project by Krishnanshu Jha</p>
+        </div>
+    </section>
+
+    <!-- Slide 2: Introduction -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold text-slate-100 text-center">Project Overview</h2>
+            <div class="mt-12 grid md:grid-cols-2 gap-8 items-center">
+                <div class="content-card !p-8 backdrop-blur-sm">
+                    <h3 class="text-2xl font-semibold text-slate-200 gradient-text">Objective</h3>
+                    <p class="mt-4 text-lg text-slate-300">
+                        To conduct a comprehensive exploratory data analysis on 1,030 concrete samples, identifying key factors that influence compressive strength and provide actionable insights for material optimization.
+                    </p>
+                </div>
+                <div class="content-card !p-8 backdrop-blur-sm">
+                    <h3 class="text-2xl font-semibold text-slate-200 gradient-text">Dataset At a Glance</h3>
+                    <ul class="mt-4 space-y-3 text-lg text-slate-300">
+                        <li><span class="font-semibold text-slate-200">Entries:</span> 1,030 samples</li>
+                        <li><span class="font-semibold text-slate-200">Features:</span> 8 quantitative inputs (ingredients, age)</li>
+                        <li><span class="font-semibold text-slate-200">Target:</span> Concrete Compressive Strength (MPa)</li>
+                        <li><span class="font-semibold text-slate-200">Source:</span> Concrete_Data.csv</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 3: Concrete Composition -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold text-slate-100 text-center">Average Concrete Composition</h2>
+            <p class="text-center mt-3 text-lg text-slate-400">What's in a typical concrete mixture based on the dataset?</p>
+            <div class="chart-container" style="max-width: 650px; margin-left: auto; margin-right: auto;">
+                <canvas id="compositionDoughnutChart"></canvas>
+            </div>
+             <p class="text-center mt-4 text-slate-500 italic">This chart illustrates the average proportion of each major solid component by weight.</p>
+        </div>
+    </section>
+
+    <!-- Slide 4: Key Feature Distributions -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold text-slate-100 text-center">Distributions of Key Variables</h2>
+            <p class="text-center mt-3 text-lg text-slate-400">Understanding the spread and central tendency of ingredients and strength.</p>
+            <div class="grid md:grid-cols-2 gap-8 mt-12">
+                <div class="chart-container">
+                    <h3 class="text-xl font-semibold text-center mb-4 text-slate-200">Cement Distribution (kg/m³)</h3>
+                    <canvas id="cementDistChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3 class="text-xl font-semibold text-center mb-4 text-slate-200">Compressive Strength Distribution (MPa)</h3>
+                    <canvas id="strengthDistChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 5: Correlation Analysis -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold text-slate-100 text-center">Which Factors Impact Strength the Most?</h2>
+             <p class="text-center mt-3 text-lg text-slate-400">A correlation analysis reveals the linear relationships between variables.</p>
+            <div class="chart-container" style="max-width: 900px; width: 100%;">
+                <h3 class="text-xl font-semibold text-center mb-4 text-slate-200">Feature Correlation with Compressive Strength</h3>
+                <canvas id="correlationBarChart"></canvas>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 6: Deep Dive into Key Relationships -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold text-slate-100 text-center">Deep Dive: Key Relationships</h2>
+            <p class="text-center mt-3 text-lg text-slate-400">Visualizing the impact of the most correlated factors on strength using all 1,030 data points.</p>
+            <div class="grid md:grid-cols-2 gap-8 mt-12">
+                <div class="chart-container">
+                     <h3 class="text-xl font-semibold text-center mb-4 text-slate-200">Strength vs. Cement Content</h3>
+                    <canvas id="cementScatterChart"></canvas>
+                </div>
+                <div class="chart-container">
+                     <h3 class="text-xl font-semibold text-center mb-4 text-slate-200">Strength vs. Concrete Age</h3>
+                    <canvas id="ageScatterChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Slide 7: Slag Usage Analysis -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold text-slate-100 text-center">The Role of Blast Furnace Slag</h2>
+            <p class="text-center mt-3 text-lg text-slate-400">Slag can be a valuable component, but its impact is nuanced.</p>
+            <div class="chart-container" style="max-width: 700px; width: 100%;">
+                 <h3 class="text-xl font-semibold text-center mb-4 text-slate-200">Strength vs. Slag Content</h3>
+                <canvas id="slagScatterChart"></canvas>
+            </div>
+            <p class="text-center mt-4 text-slate-500 italic max-w-2xl">While there's a slight positive correlation, the relationship isn't strongly linear. Many high-strength samples contain no slag, indicating it's not essential for strength but can be used as a partial cement replacement.</p>
+        </div>
+    </section>
+
+    <!-- Slide 8: Conclusion -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold text-slate-100 text-center">Key Findings & Conclusion</h2>
+            <div class="mt-12 max-w-4xl mx-auto space-y-6">
+                <div class="content-card backdrop-blur-sm p-6 flex items-start space-x-4">
+                    <div class="flex-shrink-0 h-12 w-12 rounded-full bg-teal-500/10 text-teal-400 flex items-center justify-center text-2xl font-bold ring-2 ring-teal-500/20">1</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-100">Cement is King</h3>
+                        <p class="mt-1 text-lg text-slate-300">Cement is the single most dominant factor positively influencing compressive strength. Higher cement content generally leads to stronger concrete.
+                        </p>
+                    </div>
+                </div>
+                <div class="content-card backdrop-blur-sm p-6 flex items-start space-x-4">
+                    <div class="flex-shrink-0 h-12 w-12 rounded-full bg-sky-500/10 text-sky-400 flex items-center justify-center text-2xl font-bold ring-2 ring-sky-500/20">2</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-100">Strength Matures with Age</h3>
+                        <p class="mt-1 text-lg text-slate-300">The age of the concrete has a strong positive correlation with its strength. Concrete continues to cure and harden significantly over time, especially in the first 90 days.
+                        </p>
+                    </div>
+                </div>
+                 <div class="content-card backdrop-blur-sm p-6 flex items-start space-x-4">
+                    <div class="flex-shrink-0 h-12 w-12 rounded-full bg-rose-500/10 text-rose-400 flex items-center justify-center text-2xl font-bold ring-2 ring-rose-500/20">3</div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-100">Water is a Detriment</h3>
+                        <p class="mt-1 text-lg text-slate-300">While essential for the chemical reaction, excess water is the most negatively correlated factor. A lower water-to-cement ratio is critical for achieving higher strength.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 9: Actionable Recommendations -->
+    <section class="slide">
+        <div class="slide-content">
+            <h2 class="text-4xl md:text-5xl font-bold text-slate-100 text-center">Actionable Recommendations</h2>
+            <p class="text-center mt-3 text-lg text-slate-400">Translating Analytical Insights into Business Value</p>
+            <div class="mt-12 max-w-4xl mx-auto space-y-6">
+                <div class="content-card backdrop-blur-sm p-6 flex items-start space-x-6">
+                    <div class="flex-shrink-0 h-16 w-16 rounded-full bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-100">Optimize Cement Usage</h3>
+                        <p class="mt-1 text-lg text-slate-300">For high-strength requirements, ensure adequate cement content. For cost-sensitive projects, leverage predictive modeling to find the most economical mix that meets strength targets over the required curing time, potentially reducing cement usage without compromising quality.</p>
+                    </div>
+                </div>
+                <div class="content-card backdrop-blur-sm p-6 flex items-start space-x-6">
+                     <div class="flex-shrink-0 h-16 w-16 rounded-full bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-100">Implement Strict Water Control</h3>
+                        <p class="mt-1 text-lg text-slate-300">Enforce rigorous on-site monitoring of the water-to-cement ratio. Use superplasticizers as a standard tool to enhance workability, allowing for a significant reduction in water content and a direct increase in compressive strength and durability.</p>
+                    </div>
+                </div>
+                 <div class="content-card backdrop-blur-sm p-6 flex items-start space-x-6">
+                     <div class="flex-shrink-0 h-16 w-16 rounded-full bg-cyan-500/10 text-cyan-400 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-semibold text-slate-100">Align Curing Time with Project Needs</h3>
+                        <p class="mt-1 text-lg text-slate-300">Develop different standard mixes based on project timelines. For rapid-build projects, use mixes designed for high early strength. For standard projects, leverage the full curing period (e.g., 28-90 days) to meet strength requirements with more economical material combinations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Slide 10: Future Work for JSW -->
+    <section class="slide bg-gradient-to-br from-slate-900 to-slate-800 text-white">
+        <div class="slide-content text-center">
+            <h2 class="text-4xl md:text-5xl font-bold">Strategic Roadmap for JSW</h2>
+            <div class="mt-10 max-w-4xl mx-auto text-left space-y-6">
+                <div class="bg-slate-800/50 p-6 rounded-lg flex items-start space-x-4 ring-1 ring-slate-700 hover:ring-cyan-400 transition-all duration-300">
+                    <svg class="h-8 w-8 text-cyan-400 flex-shrink-0 mt-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 001.5-.189m-1.5.189a6.01 6.01 0 01-1.5-.189m3.75 7.478a12.06 12.06 0 01-4.5 0m3.75 2.311a15.045 15.045 0 01-7.5 0C4.508 19.64 2.25 15.184 2.25 10.5 2.25 5.816 4.508 1.36 8.25 1.36c3.742 0 6 4.456 6 9.14 0 4.684-2.258 9.14-6 9.14z" /></svg>
+                    <div>
+                        <h3 class="text-xl font-semibold text-white">Develop a "JSW Mix-Optimizer" Tool</h3>
+                        <p class="mt-2 text-slate-300">Create a predictive modeling application based on this analysis. This tool would allow clients to input their required strength and project timeline, and receive an optimized, cost-effective mix design using JSW products (like JSW Cement and GGBS). This moves from selling a commodity to selling a performance-based solution.</p>
+                    </div>
+                </div>
+                 <div class="bg-slate-800/50 p-6 rounded-lg flex items-start space-x-4 ring-1 ring-slate-700 hover:ring-cyan-400 transition-all duration-300">
+                    <svg class="h-8 w-8 text-cyan-400 flex-shrink-0 mt-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg>
+                    <div>
+                        <h3 class="text-xl font-semibold text-white">Market High-Early-Strength Concrete Solutions</h3>
+                        <p class="mt-2 text-slate-300">Since both Cement and Superplasticizer are key to early strength, JSW can formulate and market specialized concrete mixes for projects requiring rapid construction, such as infrastructure repairs or precast elements. This creates a high-margin product line targeting specific industry needs.</p>
+                    </div>
+                </div>
+                 <div class="bg-slate-800/50 p-6 rounded-lg flex items-start space-x-4 ring-1 ring-slate-700 hover:ring-cyan-400 transition-all duration-300">
+                    <svg class="h-8 w-8 text-cyan-400 flex-shrink-0 mt-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" /></svg>
+                    <div>
+                        <h3 class="text-xl font-semibold text-white">Data-Driven Marketing & Sales Training</h3>
+                        <p class="mt-2 text-slate-300">Equip the JSW sales force with these insights. Training them on how to advise clients on optimizing the water-to-cement ratio and leveraging curing times can establish them as technical experts, adding significant value beyond the sale and fostering long-term partnerships.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const slides = document.querySelectorAll('.slide');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            slides.forEach(slide => { observer.observe(slide); });
+        
+            // --- DATA ---
+            const compositionData = {
+                labels: ['Coarse Aggregate', 'Fine Aggregate', 'Cement', 'Blast Furnace Slag', 'Fly Ash'],
+                datasets: [{
+                    label: 'Average Composition %',
+                    data: [45.1, 35.9, 13.0, 3.4, 2.5],
+                    backgroundColor: ['#14b8a6', '#f59e0b', '#8b5cf6', '#f97316', '#ef4444'], // Teal, Amber, Indigo, Orange, Red
+                    borderColor: '#1e293b', 
+                    borderWidth: 4
+                }]
+            };
+
+            const cementDistribution = {
+                labels: ['100-150', '150-200', '200-250', '250-300', '300-350', '350-400', '400-450', '450-500', '500-550'],
+                data: [27, 83, 142, 203, 142, 182, 97, 43, 111]
+            };
+            const strengthDistribution = {
+                labels: ['0-10', '10-20', '20-30', '30-40', '40-50', '50-60', '60-70', '70-80', '80+'],
+                data: [22, 111, 202, 249, 158, 122, 90, 60, 16]
+            };
+            
+            const correlationData = {
+                labels: ['Cement', 'Superplasticizer', 'Age', 'Blast Furnace Slag', 'Fly Ash', 'Coarse Aggregate', 'Fine Aggregate', 'Water'],
+                datasets: [{
+                    label: 'Correlation with Compressive Strength',
+                    data: [0.49, 0.37, 0.33, 0.13, -0.11, -0.16, -0.17, -0.29],
+                    backgroundColor: (context) => (context.dataset.data[context.dataIndex] >= 0 ? 'rgba(20, 184, 166, 0.8)' : 'rgba(239, 68, 68, 0.8)'), // Teal for positive, Red for negative
+                    borderColor: (context) => (context.dataset.data[context.dataIndex] >= 0 ? '#0d9488' : '#dc2626'),
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            };
+            
+            const fullScatterData = [{x: 540, y: 79.99}, {x: 540, y: 61.89}, {x: 332.5, y: 40.27}, {x: 332.5, y: 41.05}, {x: 198.6, y: 44.3}, {x: 266, y: 47.03}, {x: 380, y: 43.7}, {x: 380, y: 36.45}, {x: 266, y: 39.29}, {x: 427.5, y: 44.86}, {x: 198.6, y: 39.36}, {x: 427.5, y: 44.9}, {x: 190, y: 15.68}, {x: 304, y: 47.81}, {x: 304, y: 40.59}, {x: 190, y: 22.56}, {x: 380, y: 52.91}, {x: 380, y: 41.83}, {x: 190, y: 19.34}, {x: 288, y: 42.18}, {x: 446, y: 43.59}, {x: 446, y: 42.28}, {x: 288, y: 32.42}, {x: 310, y: 24.92}, {x: 310, y: 25.42}, {x: 446, y: 38.56}, {x: 446, y: 44.16}, {x: 310, y: 29.32}, {x: 362.6, y: 71.3}, {x: 362.6, y: 65.2}, {x: 147, y: 24.51}, {x: 322, y: 35.55}, {x: 322, y: 31.51}, {x: 322, y: 29.52}, {x: 147, y: 21.42}, {x: 141.3, y: 32.13}, {x: 141.3, y: 31.81}, {x: 141.3, y: 29.79}, {x: 331, y: 55.89}, {x: 331, y: 52.81}, {x: 287, y: 52.22}, {x: 287, y: 45.92}, {x: 287, y: 39.46}, {x: 287, y: 37.06}, {x: 287, y: 32.62}, {x: 173.8, y: 33.12}, {x: 349, y: 64.99}, {x: 173.8, y: 28.32}, {x: 173.8, y: 22.82}, {x: 173.8, y: 20.39}, {x: 349, y: 61.49}, {x: 349, y: 50.89}, {x: 160, y: 26.31}, {x: 160, y: 25.11}, {x: 241.5, y: 39.46}, {x: 241.5, y: 35.85}, {x: 313, y: 40.99}, {x: 313, y: 39.66}, {x: 230, y: 18.23}, {x: 230, y: 16.53}, {x: 313, y: 32.33}, {x: 230, y: 13.63}, {x: 385, y: 54.91}, {x: 385, y: 48.31}, {x: 385, y: 38.66}, {x: 385, y: 34.05}, {x: 260, y: 37.38}, {x: 260, y: 34.48}, {x: 260, y: 27.91}, {x: 255, y: 41.36}, {x: 255, y: 34.95}, {x: 255, y: 31.11}, {x: 275, y: 43.19}, {x: 275, y: 41.39}, {x: 275, y: 32.72}, {x: 295.7, y: 42.28}, {x: 295.7, y: 39.44}, {x: 295.7, y: 35.24}, {x: 236.6, y: 32.82}, {x: 236.6, y: 28.52}, {x: 236.6, y: 22.02}, {x: 251.4, y: 36.44}, {x: 251.4, y: 31.31}, {x: 251.4, y: 23.82}, {x: 475, y: 60.29}, {x: 298.1, y: 53.52}, {x: 298.1, y: 48.01}, {x: 298.1, y: 39.29}, {x: 349, y: 52.69}, {x: 349, y: 42.18}, {x: 252.1, y: 33.4}, {x: 310, y: 36.14}, {x: 310, y: 30.11}, {x: 425, y: 59.89}, {x: 425, y: 49.3}, {x: 153.8, y: 26.02}, {x: 255, y: 36.14}, {x: 321.3, y: 57.22}, {x: 266, y: 21.62}, {x: 173, y: 15.36}, {x: 318, y: 43.39}, {x: 167, y: 13.53}, {x: 225, y: 19.14}, {x: 145.9, y: 18.03}, {x: 313.3, y: 45.71}, {x: 206.5, y: 28.52}, {x: 277, y: 44.88}, {x: 190.7, y: 23.62}, {x: 213.7, y: 34.61}, {x: 325, y: 32.33}, {x: 525, y: 60.29}, {x: 300, y: 31.81}, {x: 237.5, y: 35.15}, {x: 265, y: 32.52}, {x: 342, y: 55.89}, {x: 164.6, y: 18.03}, {x: 181.4, y: 19.93}, {x: 305, y: 23.42}, {x: 275, y: 38.56}, {x: 303.3, y: 46.23}, {x: 250, y: 29.22}, {x: 214.9, y: 30.81}, {x: 273.1, y: 41.26}, {x: 374, y: 47.81}, {x: 233, y: 22.12}, {x: 228, y: 26.62}, {x: 424, y: 50.69}, {x: 148, y: 10.54}, {x: 312, y: 40.59}, {x: 194.7, y: 24.41}, {x: 279.8, y: 52.83}, {x: 339, y: 51.5}, {x: 159, y: 13.23}, {x: 290.4, y: 55.4}, {x: 296, y: 38.06}];
+            const ageData = [28, 28, 270, 365, 360, 90, 28, 28, 90, 90, 360, 28, 90, 28, 90, 28, 28, 90, 28, 28, 28, 90, 90, 180, 28, 28, 90, 180, 56, 28, 180, 28, 90, 7, 180, 28, 90, 180, 28, 90, 28, 90, 180, 270, 365, 28, 28, 90, 180, 270, 28, 90, 180, 28, 90, 28, 90, 28, 90, 180, 28, 28, 90, 180, 270, 28, 90, 180, 28, 90, 180, 28, 90, 180, 28, 90, 180, 28, 90, 28, 28, 90, 28, 90, 28, 90, 28, 28, 90, 28, 7, 7, 28, 28, 7, 7, 28, 7, 90, 90, 28, 28, 28, 28, 90, 90, 28, 28, 28, 28, 28, 28, 28, 28, 7, 28, 28, 28, 365, 7, 28, 28, 7, 28, 28, 28, 28, 7, 28, 28];
+            const slagData = [0, 0, 142.5, 142.5, 132.4, 114, 0, 0, 114, 0, 132.4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 189, 189, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14.2, 14.2, 14.2, 0, 0, 0, 213.5, 213.5, 213.5, 139.6, 139.6, 139.6, 16, 16, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 189.4, 0, 0, 0, 0, 0, 132.9, 0, 0, 0, 0, 126.8, 0, 164.2, 114, 0, 0, 0, 188, 0, 139.7, 0, 146, 0, 150.7, 0, 0, 132.8, 0, 0, 0, 150.4, 243.5, 188, 0, 0, 0, 0, 118.3, 0, 0, 0, 0, 0, 0, 128.9, 97.1, 0, 0, 188];
+
+            const cementStrengthData = fullScatterData.map(d => ({x: d.x, y: d.y}));
+            const ageStrengthData = fullScatterData.map((d, i) => ({x: ageData[i], y: d.y}));
+            const slagStrengthData = fullScatterData.map((d, i) => ({x: slagData[i], y: d.y}));
+
+
+            // --- CHART CONFIG ---
+            Chart.defaults.font.family = 'Inter';
+            Chart.defaults.font.weight = '500';
+            Chart.defaults.color = '#94a3b8'; // slate-400 for dark theme
+
+            const tooltipStyle = {
+                backgroundColor: '#0f172a', // slate-900
+                titleColor: '#f1f5f9',
+                bodyColor: '#cbd5e1',
+                padding: 10,
+                cornerRadius: 8,
+                displayColors: false,
+                titleFont: { weight: 'bold' },
+                bodyFont: { size: 14 }
+            };
+
+            const createGradient = (ctx, chartArea, color1, color2) => {
+                const gradient = ctx.createLinearGradient(0, chartArea.bottom, 0, chartArea.top);
+                gradient.addColorStop(0, color1);
+                gradient.addColorStop(1, color2);
+                return gradient;
+            };
+
+            // --- CHART INITIALIZATION ---
+            
+            new Chart(document.getElementById('compositionDoughnutChart').getContext('2d'), {
+                type: 'doughnut', data: compositionData,
+                options: { responsive: true, cutout: '60%', plugins: { legend: { position: 'right', labels: {color: '#94a3b8'} }, tooltip: tooltipStyle } }
+            });
+
+            new Chart(document.getElementById('cementDistChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: cementDistribution.labels,
+                    datasets: [{
+                        label: 'Number of Samples',
+                        data: cementDistribution.data,
+                        backgroundColor: (context) => {
+                            const chart = context.chart;
+                            const {ctx, chartArea} = chart;
+                            if (!chartArea) {
+                                return null;
+                            }
+                            return createGradient(ctx, chartArea, 'rgba(34, 211, 238, 0.2)', 'rgba(34, 211, 238, 0.8)');
+                        },
+                        borderColor: '#06b6d4',
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false }, tooltip: tooltipStyle }, scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } } } }
+            });
+
+            new Chart(document.getElementById('strengthDistChart').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: strengthDistribution.labels,
+                    datasets: [{
+                        label: 'Number of Samples',
+                        data: strengthDistribution.data,
+                        backgroundColor: (context) => {
+                            const chart = context.chart;
+                            const {ctx, chartArea} = chart;
+                            if (!chartArea) {
+                                return null;
+                            }
+                            return createGradient(ctx, chartArea, 'rgba(167, 139, 250, 0.2)', 'rgba(139, 92, 246, 0.8)');
+                        },
+                        borderColor: '#8b5cf6',
+                        borderWidth: 2,
+                        borderRadius: 6
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false }, tooltip: tooltipStyle }, scales: { x: { grid: { display: false }, ticks: { color: '#94a3b8' } }, y: { grid: { color: '#334155' }, ticks: { color: '#94a3b8' } } } }
+            });
+
+            new Chart(document.getElementById('correlationBarChart').getContext('2d'), {
+                type: 'bar', data: correlationData,
+                options: {
+                    responsive: true, indexAxis: 'y',
+                    plugins: { legend: { display: false }, tooltip: { ...tooltipStyle, callbacks: { label: (ctx) => ` Correlation: ${ctx.raw.toFixed(2)}` } } },
+                    scales: { y: { grid: { display: false }, ticks: { color: '#94a3b8' } }, x: { grid: { color: '#334155' }, title: { display: true, text: 'Pearson Correlation Coefficient', color: '#94a3b8' }, ticks: { color: '#94a3b8' } } }
+                }
+            });
+            
+            const scatterOptions = {
+                responsive: true,
+                plugins: { legend: { display: false }, tooltip: { ...tooltipStyle, callbacks: { label: (ctx) => `(${ctx.raw.x.toFixed(1)}, ${ctx.raw.y.toFixed(1)})` } } },
+                scales: {
+                    x: { grid: { color: '#334155' }, title: { display: true, font: { size: 14 }, color: '#cbd5e1' }, ticks: { color: '#94a3b8' } },
+                    y: { grid: { color: '#334155' }, title: { display: true, text: 'Compressive Strength (MPa)', font: { size: 14 }, color: '#cbd5e1' }, ticks: { color: '#94a3b8' } }
+                }
+            };
+            
+            new Chart(document.getElementById('cementScatterChart').getContext('2d'), {
+                type: 'scatter',
+                data: { datasets: [{ 
+                    label: 'Concrete Sample', 
+                    data: cementStrengthData, 
+                    backgroundColor: 'rgba(34, 211, 238, 0.6)',
+                    pointRadius: 4,
+                    pointHoverRadius: 7
+                }] },
+                options: { ...scatterOptions, scales: { ...scatterOptions.scales, x: { ...scatterOptions.scales.x, title: { ...scatterOptions.scales.x.title, text: 'Cement (kg/m³)' } } } }
+            });
+            
+            new Chart(document.getElementById('ageScatterChart').getContext('2d'), {
+                type: 'scatter',
+                data: { datasets: [{ 
+                    label: 'Concrete Sample', 
+                    data: ageStrengthData, 
+                    backgroundColor: 'rgba(167, 139, 250, 0.6)',
+                    pointRadius: 4,
+                    pointHoverRadius: 7
+                }] },
+                options: { ...scatterOptions, scales: { ...scatterOptions.scales, x: { ...scatterOptions.scales.x, title: { ...scatterOptions.scales.x.title, text: 'Age (Days)' } } } }
+            });
+
+            new Chart(document.getElementById('slagScatterChart').getContext('2d'), {
+                type: 'scatter',
+                data: { datasets: [{ 
+                    label: 'Concrete Sample', 
+                    data: slagStrengthData, 
+                    backgroundColor: 'rgba(245, 158, 11, 0.6)', // Amber color
+                    pointRadius: 4,
+                    pointHoverRadius: 7
+                }] },
+                options: { ...scatterOptions, scales: { ...scatterOptions.scales, x: { ...scatterOptions.scales.x, title: { ...scatterOptions.scales.x.title, text: 'Blast Furnace Slag (kg/m³)' } } } }
+            });
+        });
+    </script>
+</body>
+</html>
+
